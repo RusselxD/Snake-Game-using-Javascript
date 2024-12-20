@@ -1,6 +1,8 @@
 const canvas = document.getElementById("game-canvas");
 const ctx = canvas.getContext("2d");
 
+console.log(ctx);
+
 let currentDirection = "ArrowRight";
 let directionChanged = false;
 
@@ -27,13 +29,38 @@ let foodY = 0;
 
 document.body.addEventListener("keydown", (event) => changeDirection(event.key));
 addFood();
+snake.forEach((part) => drawSnakePart(part));
+
+function getRandomCoords() {
+    do {
+        var x = Math.floor(Math.random() * canvas.width - 9);
+        var y = Math.floor(Math.random() * canvas.height - 9);
+
+        x = x - (x % 10);
+        y = y - (y % 10);
+
+        var coordIsInSnake = false;
+        snake.forEach((part) => {
+            if (part.x === x && part.y === y) {
+                coordIsInSnake = true;
+            }
+        });
+        // this ensures that the generate coords
+        // are not within the body of the snake
+    } while (coordIsInSnake);
+
+    foodX = x;
+    foodY = y;
+}
 
 function addFood() {
-    let x = Math.floor(Math.random() * canvas.width - 9);
-    let y = Math.floor(Math.random() * canvas.height - 9);
+    getRandomCoords();
 
-    foodX = x - (x % 10);
-    foodY = y - (y % 10);
+    // painting food
+    ctx.strokeStyle = "rgb(197, 13, 56)";
+    ctx.fillStyle = "rgb(217, 40, 81)";
+    ctx.fillRect(foodX, foodY, 10, 10);
+    ctx.strokeRect(foodX, foodY, 10, 10);
 }
 
 const changeDirection = (key) => {
@@ -45,23 +72,21 @@ const changeDirection = (key) => {
 
 function drawSnakePart({ x, y }) {
     ctx.fillStyle = "rgb(48, 246, 71)";
-    ctx.strokeStyle = "rgb(2, 95, 13)";
+    ctx.strokeStyle = "rgb(0, 0, 0)";
 
     ctx.fillRect(x, y, 10, 10);
     ctx.strokeRect(x, y, 10, 10);
 }
 
 function drawSnake() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // painting food
-    ctx.strokeStyle = "rgb(197, 13, 56)";
-    ctx.fillStyle = "rgb(217, 40, 81)";
-    ctx.fillRect(foodX, foodY, 10, 10);
-    ctx.strokeRect(foodX, foodY, 10, 10);
+    // erase tail
+    const tail = snake[snake.length - 1];
+    ctx.clearRect(tail.x - 1, tail.y - 1, 12, 12);
+    snake.pop();
 
     snake.forEach((part) => drawSnakePart(part));
 
+    // if food is eaten
     if (snake[0].x === foodX && snake[0].y === foodY) {
         extendSnake();
         addFood();
@@ -70,8 +95,8 @@ function drawSnake() {
 
 function extendSnake() {
     const tail = {
-        x: snake[snake.length - 1].x - 10,
-        y: snake[snake.length - 1].y,
+        x: snake[snake.length - 1].x + directions[currentDirection],
+        y: snake[snake.length - 1].y + directions[currentDirection],
     };
     snake.push(tail);
 }
@@ -84,13 +109,13 @@ const moveSnake = () => {
 
     if (collided(head)) {
         clearInterval(moving);
-        document.body.removeEventListener("keydown", (event) => changeDirection(event.key));
+        document.body.removeEventListener("keydown", (event) =>
+            changeDirection(event.key)
+        );
         return;
     }
 
     snake.unshift(head);
-    snake.pop();
-
     drawSnake();
 
     directionChanged = false;
@@ -119,7 +144,7 @@ function collided({ x, y }) {
     return y <= -10 || y >= canvas.height || x <= -10 || x >= canvas.width;
 }
 
-const moving = setInterval(moveSnake, 70);
+const moving = setInterval(moveSnake, 100);
 // easy - 70
 // average - 55
 // hard - 40
