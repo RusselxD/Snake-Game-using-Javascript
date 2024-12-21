@@ -77,6 +77,8 @@ function startGame() {
     // hard - 55
 
     isGameRunning = true;
+
+    console.log("hey");
 }
 
 function getRandomCoords() {
@@ -194,8 +196,8 @@ function stopMoving() {
 function drawDeadSnake(i) {
     if (i >= snake.length) {
         const modal = document.getElementById("you-died-modal");
+        modal.style.display = "block";
         modal.classList.add("activate-modal");
-        console.log(modal);
         return;
     }
 
@@ -229,5 +231,12 @@ function collided({ x, y }) {
         y <= -snakeSize || y >= canvas.height || x <= -snakeSize || x >= canvas.width
     );
 }
+
+
+// document.getElementById("start-button").addEventListener("click", () => {
+
+    
+    
+// });
 
 startGame();
