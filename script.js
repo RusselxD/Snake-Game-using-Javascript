@@ -4,13 +4,20 @@ const ctx = canvas.getContext("2d");
 let currentDirection = "ArrowRight";
 let directionChanged = false;
 
-var snakeSize = 10;
+var isGameRunning;
+var snakeSize = 15;
+
+determineSize(window.innerWidth);
+
+let middle = Math.floor(canvas.width / 2);
+middle = middle - (middle % snakeSize) - snakeSize * 5;
+console.log(middle);
 
 let snake = [
-    { x: 150, y: 150 },
-    { x: 135, y: 150 },
-    { x: 120, y: 150 },
-    { x: 105, y: 150 },
+    { x: middle, y: middle },
+    { x: middle - snakeSize * 1, y: middle },
+    { x: middle - snakeSize * 2, y: middle },
+    { x: middle - snakeSize * 3, y: middle },
 ];
 
 const directions = {
@@ -26,18 +33,50 @@ let foodY = 0;
 var moving = undefined;
 
 window.addEventListener("resize", () => {
-
+    if (isGameRunning) return;
+    determineSize(window.innerWidth);
 });
+
+function determineSize(screenWidth) {
+    // 350 x 350 : (10) (< 465) fff
+    // 450 x 450 : (10) (465 - 600) fff
+    // 525 x 525 : (15) (600 - 750) fff
+    // 690 x 525 : (15) (750 - 900) fff
+    // 750 x 525 : (15) (900 - 1100) fff
+    // 810 x 570 : (15) (1100 >)
+
+    let config = { snakeSize: 15, width: 810, height: 570 };
+
+    const screenConfigs = [
+        { maxWidth: 465, snakeSize: 10, width: 350, height: 350 },
+        { maxWidth: 600, snakeSize: 10, width: 450, height: 450 },
+        { maxWidth: 750, snakeSize: 15, width: 525, height: 525 },
+        { maxWidth: 900, snakeSize: 15, width: 690, height: 525 },
+        { maxWidth: 1100, snakeSize: 15, width: 750, height: 525 },
+    ];
+
+    for (let scf of screenConfigs) {
+        if (screenWidth < scf.maxWidth) {
+            config = scf;
+            break;
+        }
+    }
+
+    snakeSize = config.snakeSize;
+    canvas.width = config.width;
+    canvas.height = config.height;
+}
 
 function startGame() {
     document.body.addEventListener("keydown", (event) => changeDirection(event.key));
     addFood();
-    snake.forEach((part) => drawSnakePart(part));
 
     moving = setInterval(moveSnake, 70);
     // easy - 80
     // average - 70
     // hard - 55
+
+    isGameRunning = true;
 }
 
 function getRandomCoords() {
@@ -68,10 +107,8 @@ function addFood() {
     getRandomCoords();
 
     // paint food
-    ctx.strokeStyle = "rgb(197, 13, 56)";
     ctx.fillStyle = "rgb(217, 40, 81)";
     ctx.fillRect(foodX, foodY, snakeSize, snakeSize);
-    ctx.strokeRect(foodX, foodY, snakeSize, snakeSize);
 }
 
 const changeDirection = (key) => {
@@ -147,9 +184,25 @@ function stopMoving() {
     );
 
     ctx.fillStyle = "rgb(231, 22, 22)";
+    ctx.fillStyle = "rgb(255, 50, 50)";
 
-    ctx.fillRect(snake[0].x, snake[0].y, snakeSize, snakeSize);
-    ctx.strokeRect(snake[0].x, snake[0].y, snakeSize, snakeSize);
+    drawDeadSnake(0);
+
+    isGameRunning = false;
+}
+
+function drawDeadSnake(i) {
+    if (i >= snake.length) {
+        const modal = document.getElementById("you-died-modal");
+        modal.classList.add("activate-modal");
+        console.log(modal);
+        return;
+    }
+
+    ctx.fillRect(snake[i].x, snake[i].y, snakeSize, snakeSize);
+    ctx.strokeRect(snake[i].x, snake[i].y, snakeSize, snakeSize);
+
+    setTimeout(() => drawDeadSnake(i + 1), 30);
 }
 
 function keyIsOppositeDirection(key) {

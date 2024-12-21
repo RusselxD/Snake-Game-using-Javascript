@@ -1,12 +1,57 @@
+@font-face {
+    font-family: Pixelify-Sans;
+    src: url("/font/PixelifySans-Regular.ttf");
+}
+
 body {
     display: flex;
     justify-content: center;
     align-items: center;
 
+    font-family: Pixelify-Sans;
+
     height: 100vh;
     margin: 0;
+
+    position: relative;
 }
 #game-canvas {
     background-color: rgb(29, 27, 27);
     margin: 0;
+}
+
+#you-died-modal {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+
+    font-size: 0;
+}
+
+.activate-modal {
+    opacity: 0;
+
+    text-align: center;
+    align-content: center;
+    background-color: rgba(255, 0, 0, 0.441);
+
+    animation: show-modal 0.5s forwards, grow-text 0.9s forwards 0.5s;
+}
+
+@keyframes show-modal {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes grow-text {
+    from {
+        font-size: 0rem;
+    }
+    to {
+        font-size: 5rem;
+    }
 }
