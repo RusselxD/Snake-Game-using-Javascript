@@ -1,13 +1,12 @@
 body {
-     display: flex;
-     justify-content: center;
-     align-items: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
-     height: 100vh;
-     margin: 0;
- }
- #game-canvas {
-     background-color: rgb(29, 27, 27);
-     margin: 0;
- }
-
+    height: 100vh;
+    margin: 0;
+}
+#game-canvas {
+    background-color: rgb(29, 27, 27);
+    margin: 0;
+}

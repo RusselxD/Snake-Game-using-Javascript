@@ -4,17 +4,13 @@ const ctx = canvas.getContext("2d");
 let currentDirection = "ArrowRight";
 let directionChanged = false;
 
-var snakeSize = 15;
+var snakeSize = 10;
 
 let snake = [
     { x: 150, y: 150 },
     { x: 135, y: 150 },
     { x: 120, y: 150 },
     { x: 105, y: 150 },
-    // { x: 110, y: 150 },
-    // { x: 100, y: 150 },
-    // { x: 90, y: 150 },
-    // { x: 80, y: 150 },
 ];
 
 const directions = {
@@ -27,31 +23,40 @@ const directions = {
 let foodX = 0;
 let foodY = 0;
 
+var moving = undefined;
 
+window.addEventListener("resize", () => {
 
-document.body.addEventListener("keydown", (event) => changeDirection(event.key));
-addFood();
-snake.forEach((part) => drawSnakePart(part));
+});
+
+function startGame() {
+    document.body.addEventListener("keydown", (event) => changeDirection(event.key));
+    addFood();
+    snake.forEach((part) => drawSnakePart(part));
+
+    moving = setInterval(moveSnake, 70);
+    // easy - 80
+    // average - 70
+    // hard - 55
+}
 
 function getRandomCoords() {
     do {
         var x = Math.floor(Math.random() * (canvas.width - (snakeSize - 1)));
         var y = Math.floor(Math.random() * (canvas.height - (snakeSize - 1)));
 
-        console.log(x)
-       
         x = x - (x % snakeSize);
         y = y - (y % snakeSize);
 
         var coordIsInSnake = false;
-        for(let part of snake){
+        for (let part of snake) {
             if (part.x === x && part.y === y) {
                 coordIsInSnake = true;
                 break;
             }
         }
-        
-        // this ensures that the generate coords
+
+        // ensures that the generated random coords
         // are not within the body of the snake
     } while (coordIsInSnake);
 
@@ -62,7 +67,7 @@ function getRandomCoords() {
 function addFood() {
     getRandomCoords();
 
-    // painting food
+    // paint food
     ctx.strokeStyle = "rgb(197, 13, 56)";
     ctx.fillStyle = "rgb(217, 40, 81)";
     ctx.fillRect(foodX, foodY, snakeSize, snakeSize);
@@ -86,15 +91,16 @@ function drawSnakePart({ x, y }) {
 function drawSnake() {
     // erase tail
     const tail = snake[snake.length - 1];
-    ctx.clearRect(tail.x - 1, tail.y - 1, snakeSize + 2, snakeSize + 2 );
+    ctx.clearRect(tail.x - 1, tail.y - 1, snakeSize + 2, snakeSize + 2);
     snake.pop();
 
+    // draw new head
     ctx.fillStyle = "rgb(12, 206, 227)";
-
     ctx.fillRect(snake[0].x, snake[0].y, snakeSize, snakeSize);
     ctx.strokeRect(snake[0].x, snake[0].y, snakeSize, snakeSize);
 
-    for(let i = 1; i < snake.length; i++){
+    // draw the rest of the body
+    for (let i = 1; i < snake.length; i++) {
         drawSnakePart(snake[i]);
     }
 
@@ -114,34 +120,37 @@ function extendSnake() {
 }
 
 const moveSnake = () => {
-    const head = {
+    const newHead = {
         x: snake[0].x + directions[currentDirection].x,
         y: snake[0].y + directions[currentDirection].y,
+        // create new head (advanced in current direction)
     };
-
-    console.log(head.x, head.y);
 
     ctx.strokeStyle = "rgb(0, 0, 0)";
 
-    if (collided(head)) {
-        clearInterval(moving);
-        document.body.removeEventListener("keydown", (event) =>
-            changeDirection(event.key)
-        );
-
-        ctx.fillStyle = "rgb(231, 22, 22)";
-
-        ctx.fillRect(snake[0].x, snake[0].y, snakeSize, snakeSize);
-        ctx.strokeRect(snake[0].x, snake[0].y, snakeSize, snakeSize);
-
+    if (collided(newHead)) {
+        stopMoving();
         return;
     }
 
-    snake.unshift(head);
+    // add new head to the snake
+    snake.unshift(newHead);
     drawSnake();
 
     directionChanged = false;
 };
+
+function stopMoving() {
+    clearInterval(moving);
+    document.body.removeEventListener("keydown", (event) =>
+        changeDirection(event.key)
+    );
+
+    ctx.fillStyle = "rgb(231, 22, 22)";
+
+    ctx.fillRect(snake[0].x, snake[0].y, snakeSize, snakeSize);
+    ctx.strokeRect(snake[0].x, snake[0].y, snakeSize, snakeSize);
+}
 
 function keyIsOppositeDirection(key) {
     const opposite = {
@@ -163,10 +172,9 @@ function collided({ x, y }) {
     }
 
     // check if head collided with walls
-    return y <= -snakeSize || y >= canvas.height || x <= -snakeSize || x >= canvas.width;
+    return (
+        y <= -snakeSize || y >= canvas.height || x <= -snakeSize || x >= canvas.width
+    );
 }
 
-const moving = setInterval(moveSnake, 70);
-// easy - 80
-// average - 70
-// hard - 55
+startGame();
