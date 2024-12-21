@@ -232,11 +232,8 @@ function collided({ x, y }) {
     );
 }
 
-
 // document.getElementById("start-button").addEventListener("click", () => {
 
-    
-    
 // });
 
 startGame();
